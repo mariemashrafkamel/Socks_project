@@ -1,3 +1,52 @@
+Vue.config.devtools = true;
+Vue.component('product-review', {
+    template: `
+    <form class="review-form" @submit.prevent="onSubmit">
+    <p>
+    <label for="name">Name: </label>
+    <input id="name" v-model="name">
+    </p>
+    <p>
+    <label for="review">Review: </label>
+    <textarea id="review" v-model="review"></textarea>
+    </p>
+    <p>
+    <label for="rating">Rating: </label>
+    <select id="rating" v-model.number="rating">
+    <option>5</option>
+    <option>4</option>
+    <option>3</option>
+    <option>2</option>
+    <option>1</option>
+    </select>
+    </p>
+    <p>
+    <input type="submit" value="Submit">
+    </p>
+    </form>
+    `,
+    data() {
+        return {
+
+            name: null,
+            review: null,
+            rating: null,
+        }
+    },
+})
+Vue.component('product-details', {
+    props: {
+        details: {
+            type: Array,
+            required: true,
+        }
+    },
+    template: `
+    <ul>
+    <li v-for="detail in details">{{ detail }}</li>
+</ul>
+    `,
+})
 Vue.component('product', {
     props: {
         premium: {
@@ -17,11 +66,9 @@ Vue.component('product', {
         <p v-if="inStock">In Stock</p>
         <p v-else :class="{ outOfStock: !inStock }">out of stock</p>
         <p>{{ sale }}</p>
-        <p>User Is Premium: {{ premium }}</p>
+        <p v-if="premium">User Is Premium: {{ premium }}</p>
         <p>Shipping: {{ shipping }}</p>
-        <ul>
-            <li v-for="detail in details">{{ detail }}</li>
-        </ul>
+        
         <p>Colors:</p>
         <ul>
             <li v-for="(variant,index) in variants" :key="variant.variantId" class="color-box" v-bind:style="{ backgroundColor:variant.variantColor } " @mouseover="updateProduct(index) ">
@@ -33,10 +80,9 @@ Vue.component('product', {
         </ul>
         <button v-on:click="addToCart " :disabled="!inStock" :class="{ disabledButton: !inStock }">Add to Cart</button>
         <button v-on:click="removeFromCart ">Remove From Cart</button>
-        <div class="cart ">
-            <p>cart({{ cart }})</p>
-        </div>
+        
     </div>
+    <product-review></product-review>
 </div>
     `,
     data() {
@@ -65,15 +111,17 @@ Vue.component('product', {
                 }
             ],
             sizes: ["S", "L", "XL"],
-            cart: 0,
+
         }
     },
     methods: {
         addToCart: function() {
-            this.cart += 1;
+            //this.cart += 1;
+            this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId);
         },
         removeFromCart: function() {
-            this.cart -= 1;
+            //this.cart -= 1;
+            this.$emit('remove-from-cart', this.variants[this.selectedVariant].variantId);
         },
         updateProduct: function(index) {
             this.selectedVariant = index;
@@ -110,6 +158,15 @@ var app = new Vue({
     el: '#app',
     data: {
         premium: false,
+        cart: [],
+    },
+    methods: {
+        updateCart(id) {
+            this.cart.push(id);
+        },
+        removeCart(id) {
+            this.cart.pop(id);
+        }
     },
 
 })
